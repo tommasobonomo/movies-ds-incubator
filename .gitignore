@@ -1,4 +1,5 @@
 .python-version
-data/
+data/kaggle/
 misc file/
 .ipynb_checkpoints
+movie dataset/
