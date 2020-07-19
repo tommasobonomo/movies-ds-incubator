@@ -178,7 +178,8 @@ class TMDBFiller(DataFillerAbstract):
         # filtered_dtypes = self.movies_df.dtypes[self.movies_df.dtypes.index.isin(self.fill_columns.keys())]
         self.movies_df = self.movies_df.astype(original_dtypes)
         self.logger.info(f'Number of rows fully filled: ' 
-                         f'{len(filtered_df) - len(self.movies_df.query(query, inplace=False, engine="python"))}')
+                         f'{len(filtered_df) - len(self.movies_df.query(query, inplace=False, engine="python"))}'
+                         f'There may be partially filled rows')
         pool.close()
         pool.join()
 
@@ -225,17 +226,32 @@ class TMDBFiller(DataFillerAbstract):
                 for col in will_fill_cols:
                     original_col_name, _ = self.fill_columns[col]
                     val = getattr(movie, original_col_name, None)
-                    if val is not None or (original_col_name in ['budget', 'revenue'] and val != 0):
-                        if original_col_name in ['adult', 'backdrop_path', 'homepage', 'imdb_id',
-                                                 'original_language', 'original_title', 'overview', 'popularity',
-                                                 'poster_path', 'release_date', 'runtime', 'tagline', 'status',
-                                                 'title', 'video', 'vote_average', 'vote_count']:
+                    if val is not None:
+                        if original_col_name in ['adult', 'popularity', 'runtime', 'status',
+                                                 'video', 'vote_average', 'vote_count']:
                             # may need special treatment later
                             pass
+                        elif original_col_name in ['revenue', 'budget'] and int(val) > 0:
+                            val = int(val)
+                        elif original_col_name in ['tagline', 'release_date', 'original_language', 'original_title',
+                                                   'backdrop_path', 'homepage', 'imdb_id',
+                                                   'overview', 'poster_path', 'title'] and len(val) > 0:
+                            val = str(val)
+                        elif original_col_name is 'spoken_languages' and len(val) > 0:
+                            val = val[0]['iso_639_1']
 
-                        if original_col_name in ['genres', 'production_companies',
-                                                 'production_countries', 'spoken_languages']:
-                            val = " ,".join((str(_val) for _val in val))
+                        elif original_col_name in ['genres', 'production_companies',
+                                                   'production_countries'] and len(val) > 0:
+                            val = ", ".join((str(_val['name']) for _val in val))
+
+                        elif original_col_name in ['belongs_to_collection']:
+                            val = val['name']
+
+                        else:
+                            self.logger.error(f"[{curr_process_name}:{index}/{total}]ID: {movie_id} Name:{movie.title} "
+                                              f"¦ Given field name: {original_col_name} for column name: {col} "
+                                              f"is not valid or empty value, val:{val}")
+                            continue
 
                         row_dict[col] = val
                         self.counter[col] += 1
