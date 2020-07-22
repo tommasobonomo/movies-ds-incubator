@@ -9,15 +9,11 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.model_selection import StratifiedKFold, cross_val_score, train_test_split
 from sklearn.pipeline import Pipeline
 
-DATA_FOLDER = "../data"
-
 app = typer.Typer()
 
 
 def data_preprocessing(
-    data: pd.DataFrame,
-    feature_columns: List[str],
-    target_column: str = "movie_classification",
+    data: pd.DataFrame, feature_columns: List[str],
 ) -> Tuple[pd.DataFrame, pd.Series]:
     """Preprocess the `feature_columns` in data to a matrix of features `X` and an array of target variables `y`.
 
@@ -87,11 +83,16 @@ def model_pipeline(
 
 
 @app.command()
-def evaluate():
+def evaluate(data_path: str):
     """Evaluates a default Random Forest model on the dataset encoded with tf-idf
+
+    Args:
+
+        data_path (str): Path to the data file
     """
+
     typer.echo("Loading data...")
-    data = pd.read_csv(f"{DATA_FOLDER}/final_dataset.csv").convert_dtypes()
+    data = pd.read_csv(data_path).convert_dtypes()
     feature_columns = [
         "description",
         "production_countries",
@@ -114,10 +115,14 @@ def evaluate():
 
 
 @app.command()
-def optimize(n_trials: Optional[int] = None, timeout: Optional[int] = None):
+def optimize(
+    data_path: str, n_trials: Optional[int] = None, timeout: Optional[int] = None
+):
     """Optimises the Random Forest model with the Optuna framework, on data encoded through tf-idf
 
     Args:
+
+        data_path (str): Path to the data file
 
         n_trials (Optional[int]): Number of trials to execute
 
@@ -132,7 +137,7 @@ def optimize(n_trials: Optional[int] = None, timeout: Optional[int] = None):
         raise ValueError("At least one of n_trials and timeout should be defined.")
 
     typer.echo("Loading data...")
-    data = pd.read_csv(f"{DATA_FOLDER}/final_dataset.csv").convert_dtypes()
+    data = pd.read_csv(data_path).convert_dtypes()
     feature_columns = [
         "description",
         "production_countries",
