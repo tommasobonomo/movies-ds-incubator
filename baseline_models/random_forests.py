@@ -95,11 +95,16 @@ def evaluate(data_path: str):
     data = pd.read_csv(data_path).convert_dtypes()
     feature_columns = [
         "description",
+        "keywords",
         "production_countries",
         "language",
+        "runtime",
+        "date",
+        "title",
         "director",
         "production_companies",
         "cast",
+        "genres",
         "description2",
         "tagline",
     ]
@@ -107,7 +112,21 @@ def evaluate(data_path: str):
     X_train, X_test, y_train, y_test = train_test_split(X, y, stratify=y)
 
     typer.echo("Training model...")
-    pipe = model_pipeline(feature_columns)
+    text_columns = [
+        "description",
+        "keywords",
+        "production_countries",
+        "language",
+        "date",
+        "title",
+        "director",
+        "production_companies",
+        "cast",
+        "genres",
+        "description2",
+        "tagline",
+    ]
+    pipe = model_pipeline(text_columns)
     pipe.fit(X_train, y_train)
     accuracy = pipe.score(X_test, y_test)
 
