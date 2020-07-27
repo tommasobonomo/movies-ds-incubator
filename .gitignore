@@ -128,3 +128,7 @@ dmypy.json
 # log files
 log.txt
 scraper_log.txt
+
+
+# catboost diretory
+catboost_info
