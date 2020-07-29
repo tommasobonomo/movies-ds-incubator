@@ -2,10 +2,10 @@
 """
 This file include a periodical threading implementation.
 """
+import asyncio
+import logging
 import threading
 import time
-import logging
-import asyncio
 
 logger = logging.getLogger()
 
@@ -19,6 +19,7 @@ class RepeatedTimer(object):
     """
     Async non blocking function loop caller .
     """
+
     def __init__(self, function, interval, event_loop=None, now=False, *args, **kwargs):
         """
         Init function for async non blocking function caller.
@@ -61,7 +62,9 @@ class RepeatedTimer(object):
             self.function(*self.args, **self.kwargs)
             self.is_function_running = False
         else:
-            logger.info(f'The scheduled function is already running, will check after: {self.interval} seconds')
+            logger.info(
+                f"The scheduled function is already running, will check after: {self.interval} seconds"
+            )
 
     @property
     def running(self):
@@ -70,7 +73,9 @@ class RepeatedTimer(object):
     def start(self):
         if self._timer is None:
             self.next_call += self.interval
-            self._timer = threading.Timer(max((self.next_call - time.time()), 0), self._run)
+            self._timer = threading.Timer(
+                max((self.next_call - time.time()), 0), self._run
+            )
             self._timer.start()
 
     def stop(self):
